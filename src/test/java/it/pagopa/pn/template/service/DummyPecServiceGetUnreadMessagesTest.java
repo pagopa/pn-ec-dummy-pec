@@ -2,6 +2,11 @@ package it.pagopa.pn.template.service;
 
 import it.pagopa.pn.template.dto.PecInfo;
 import it.pagopa.pn.template.type.PecType;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Session;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,7 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import reactor.test.StepVerifier;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Properties;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -22,6 +31,9 @@ class DummyPecServiceGetUnreadMessagesTest {
 
     @Autowired
     private DummyPecService dummyPecService;
+
+    @Autowired
+    private DummyPecServiceUtil dummyPecServiceUtil;
 
     @BeforeEach
     void setUp() {
@@ -68,4 +80,36 @@ class DummyPecServiceGetUnreadMessagesTest {
                     })
                     .verifyComplete();
     }
+
+    @Test
+    void testConvertPecInfoToBytes_ShouldIncludeDaticertAttachment() throws Exception {
+        // Arrange
+        PecInfo pecInfo = PecInfo.builder()
+                                 .messageId("test-message-id")
+                                 .from("sender@test.com")
+                                 .receiverAddress("receiver@test.com")
+                                 .subject("Test Subject")
+                                 .replyTo("reply@test.com")
+                                 .build();
+
+        // Act
+        byte[] mimeBytes = dummyPecServiceUtil.convertPecInfoToBytes(pecInfo);
+
+        // Assert
+        MimeMessage mimeMessage = new MimeMessage(Session.getInstance(new Properties()), new ByteArrayInputStream(mimeBytes));
+        MimeMultipart multipart = (MimeMultipart) mimeMessage.getContent();
+
+        // Verifica che ci siano due parti: testo + allegato
+        assertEquals(2, multipart.getCount());
+
+        // Verifica l'allegato daticert.xml
+        MimeBodyPart datiCertPart = (MimeBodyPart) multipart.getBodyPart(1);
+        assertEquals("daticert.xml", datiCertPart.getFileName());
+
+        // Leggi il contenuto dello stream come stringa
+        var inputStream = datiCertPart.getInputStream();
+        String content = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
+        assertTrue(content.contains("<postacert tipo=\"avvenuta-consegna\""));
+    }
+
 }

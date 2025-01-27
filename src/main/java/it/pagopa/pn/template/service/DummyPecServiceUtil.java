@@ -1,12 +1,19 @@
 package it.pagopa.pn.template.service;
 
 import it.pagopa.pn.template.dto.PecInfo;
+import it.pagopa.pn.template.util.PecUtils;
+import jakarta.activation.DataHandler;
+import jakarta.activation.DataSource;
 import jakarta.mail.Session;
+import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
+import jakarta.mail.util.ByteArrayDataSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 @Service
@@ -23,9 +30,11 @@ public class DummyPecServiceUtil {
 
     byte[] convertPecInfoToBytes(PecInfo pecInfo) {
         try {
+            // Creazione della sessione MIME
             Session session = Session.getDefaultInstance(new Properties());
-
             MimeMessage mimeMessage = new MimeMessage(session);
+
+            // Imposta i dettagli del messaggio
             mimeMessage.setSubject(pecInfo.getSubject() != null ? pecInfo.getSubject() : "No Subject");
             mimeMessage.setFrom(pecInfo.getFrom() != null ? pecInfo.getFrom() : "unknown@domain.com");
 
@@ -34,7 +43,38 @@ public class DummyPecServiceUtil {
                                          new jakarta.mail.internet.InternetAddress(pecInfo.getReceiverAddress()));
             }
 
-            mimeMessage.setText("Questo è un messaggio di esempio.");
+            // Crea il contenuto del messaggio
+            var textPart = new MimeBodyPart();
+            textPart.setText("Questo è un messaggio di esempio.", "UTF-8");
+
+            // Genera il contenuto del daticert.xml
+            StringBuffer datiCertXml = PecUtils.generateDaticertConsegna(
+                    pecInfo.getFrom(),
+                    pecInfo.getReceiverAddress(),
+                    pecInfo.getReplyTo(),
+                    pecInfo.getSubject(),
+                    "mock-pec",
+                    PecUtils.getCurrentDate(),
+                    PecUtils.getCurrentTime(),
+                    pecInfo.getMessageId()
+                                                                  );
+
+            // Crea la parte del messaggio per daticert.xml
+            var datiCertPart = new MimeBodyPart();
+
+            DataSource dataSource = new ByteArrayDataSource(datiCertXml.toString().getBytes(StandardCharsets.UTF_8), "application/xml");
+            datiCertPart.setDataHandler(new DataHandler(dataSource));
+            datiCertPart.setFileName("daticert.xml");
+
+            // Combina il corpo e l'allegato
+            var mimeMultipart = new MimeMultipart();
+            mimeMultipart.addBodyPart(textPart);
+            mimeMultipart.addBodyPart(datiCertPart);
+
+            // Imposta il contenuto del messaggio MIME
+            mimeMessage.setContent(mimeMultipart);
+
+            // Converte il messaggio MIME in byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             mimeMessage.writeTo(outputStream);
 
