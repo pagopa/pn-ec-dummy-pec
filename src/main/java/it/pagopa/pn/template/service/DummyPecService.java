@@ -39,6 +39,7 @@ public class DummyPecService implements PnPecService {
                MimeMessage mimeMessage = new MimeMessage(Session.getInstance(new Properties()), new ByteArrayInputStream(message));
 
                // get message info
+               String messageID = mimeMessage.getMessageID();
                String subject = mimeMessage.getSubject();
                String from = mimeMessage.getFrom()[0].toString();
                String replyTo = (mimeMessage.getReplyTo() != null &&
@@ -56,7 +57,7 @@ public class DummyPecService implements PnPecService {
                String deliveryMessageId = UUID.randomUUID().toString();
 
                PecInfo acceptanceInfo = PecInfo.builder()
-                                               .messageId(acceptanceMessageId)
+                                               .messageId(messageID)
                                                .receiverAddress(receiverAddress)
                                                .subject(subject)
                                                .from(from)
@@ -67,7 +68,7 @@ public class DummyPecService implements PnPecService {
                                                .build();
 
                PecInfo deliveryInfo = PecInfo.builder()
-                                             .messageId(deliveryMessageId)
+                                             .messageId(messageID)
                                              .receiverAddress(receiverAddress)
                                              .subject(subject)
                                              .from(from)

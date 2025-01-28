@@ -7,6 +7,7 @@ import jakarta.mail.Session;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -82,15 +83,27 @@ class DummyPecServiceGetUnreadMessagesTest {
     }
 
     @Test
-    void testConvertPecInfoToBytes_ShouldIncludeDaticertAttachment() throws Exception {
+    void testConvertPecInfoToBytes_ShouldIncludeDaticertAccettazioneAttachment() throws Exception {
+        String daticert = testConvertPecInfoToBytes(PecType.ACCETTAZIONE);
+        assertTrue(daticert.contains("<postacert tipo=\"accettazione\""));
+    }
+    @Test
+    void testConvertPecInfoToBytes_ShouldIncludeDaticertConsegnaAttachment() throws Exception {
+        String daticert = testConvertPecInfoToBytes(PecType.CONSEGNA);
+        assertTrue(daticert.contains("<postacert tipo=\"avvenuta-consegna\""));
+    }
+
+    // Converte un PecInfo in un daticert. Restituisce il daticert sottoforma di stringa
+    String testConvertPecInfoToBytes(PecType pecType) throws IOException, MessagingException {
         // Arrange
         PecInfo pecInfo = PecInfo.builder()
-                                 .messageId("test-message-id")
-                                 .from("sender@test.com")
-                                 .receiverAddress("receiver@test.com")
-                                 .subject("Test Subject")
-                                 .replyTo("reply@test.com")
-                                 .build();
+                .messageId("test-message-id")
+                .from("sender@test.com")
+                .receiverAddress("receiver@test.com")
+                .subject("Test Subject")
+                .replyTo("reply@test.com")
+                .pecType(pecType)
+                .build();
 
         // Act
         byte[] mimeBytes = dummyPecServiceUtil.convertPecInfoToBytes(pecInfo);
@@ -108,8 +121,7 @@ class DummyPecServiceGetUnreadMessagesTest {
 
         // Leggi il contenuto dello stream come stringa
         var inputStream = datiCertPart.getInputStream();
-        String content = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
-        assertTrue(content.contains("<postacert tipo=\"avvenuta-consegna\""));
+        return new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
     }
 
 }

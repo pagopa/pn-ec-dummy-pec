@@ -16,11 +16,12 @@ import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
+import static jakarta.mail.Message.RecipientType.TO;
+
 @Service
 public class DummyPecServiceUtil {
     @Value("${dummy.pec.min-delay-ms:100}")
     private long minDelayMs;
-
     @Value("${dummy.pec.max-delay-ms:500}")
     private long maxDelayMs;
 
@@ -39,8 +40,7 @@ public class DummyPecServiceUtil {
             mimeMessage.setFrom(pecInfo.getFrom() != null ? pecInfo.getFrom() : "unknown@domain.com");
 
             if (pecInfo.getReceiverAddress() != null) {
-                mimeMessage.addRecipient(MimeMessage.RecipientType.TO,
-                                         new jakarta.mail.internet.InternetAddress(pecInfo.getReceiverAddress()));
+                mimeMessage.addRecipient(TO, new jakarta.mail.internet.InternetAddress(pecInfo.getReceiverAddress()));
             }
 
             // Crea il contenuto del messaggio
@@ -48,16 +48,7 @@ public class DummyPecServiceUtil {
             textPart.setText("Questo è un messaggio di esempio.", "UTF-8");
 
             // Genera il contenuto del daticert.xml
-            StringBuffer datiCertXml = PecUtils.generateDaticertConsegna(
-                    pecInfo.getFrom(),
-                    pecInfo.getReceiverAddress(),
-                    pecInfo.getReplyTo(),
-                    pecInfo.getSubject(),
-                    "mock-pec",
-                    PecUtils.getCurrentDate(),
-                    PecUtils.getCurrentTime(),
-                    pecInfo.getMessageId()
-                                                                  );
+            StringBuilder datiCertXml = PecUtils.generateDaticert(pecInfo, "mock-pec", PecUtils.getCurrentDate(), PecUtils.getCurrentTime());
 
             // Crea la parte del messaggio per daticert.xml
             var datiCertPart = new MimeBodyPart();
