@@ -9,16 +9,19 @@ import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
 import jakarta.mail.util.ByteArrayDataSource;
+import lombok.CustomLog;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.Properties;
 
 import static jakarta.mail.Message.RecipientType.TO;
 
 @Service
+@CustomLog
 public class DummyPecServiceUtil {
     @Value("${dummy.pec.min-delay-ms:100}")
     private long minDelayMs;
@@ -29,8 +32,11 @@ public class DummyPecServiceUtil {
         return minDelayMs + (long) (Math.random() * (maxDelayMs - minDelayMs));
     }
 
-    byte[] convertPecInfoToBytes(PecInfo pecInfo) {
+    byte[] convertPecInfoToBytes(Map.Entry<String, PecInfo> entry) {
         try {
+            String messageID = entry.getKey();
+            PecInfo pecInfo = entry.getValue();
+
             // Creazione della sessione MIME
             Session session = Session.getDefaultInstance(new Properties());
             MimeMessage mimeMessage = new MimeMessage(session);
@@ -67,6 +73,9 @@ public class DummyPecServiceUtil {
 
             // Converte il messaggio MIME in byte array
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+            mimeMessage.saveChanges();
+            mimeMessage.setHeader("Message-ID", messageID);
             mimeMessage.writeTo(outputStream);
 
             return outputStream.toByteArray();

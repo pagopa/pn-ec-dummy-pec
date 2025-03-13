@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -106,7 +107,7 @@ class DummyPecServiceGetUnreadMessagesTest {
                 .build();
 
         // Act
-        byte[] mimeBytes = dummyPecServiceUtil.convertPecInfoToBytes(pecInfo);
+        byte[] mimeBytes = dummyPecServiceUtil.convertPecInfoToBytes(Map.entry("test-message-id", pecInfo));
 
         // Assert
         MimeMessage mimeMessage = new MimeMessage(Session.getInstance(new Properties()), new ByteArrayInputStream(mimeBytes));

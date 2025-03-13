@@ -101,10 +101,10 @@ public class DummyPecService implements PnPecService {
                        }
 
                        // Filtra i messaggi non letti
-                       var unreadMessages = pecMap.values().stream().filter(pecInfo -> !pecInfo.isRead()).limit(limit).toList();
+                       var unreadMessages = pecMap.entrySet().stream().filter(entry -> !entry.getValue().isRead()).limit(limit).toList();
 
                        unreadMessages.stream()
-                                     .map(PecInfo::getMessageId)
+                                     .map(entry -> entry.getValue().getMessageId())
                                      .toList()
                                      .forEach(messageId -> unreadMessagesLog.append(messageId).append(", "));
 
