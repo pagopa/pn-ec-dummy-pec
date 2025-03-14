@@ -27,6 +27,7 @@ public class DummyPecServiceUtil {
     private long minDelayMs;
     @Value("${dummy.pec.max-delay-ms:500}")
     private long maxDelayMs;
+    public static final String DUMMY_PATTERN_STRING = "@pec.dummy.it";
 
     public long calculateRandomDelay() {
         return minDelayMs + (long) (Math.random() * (maxDelayMs - minDelayMs));

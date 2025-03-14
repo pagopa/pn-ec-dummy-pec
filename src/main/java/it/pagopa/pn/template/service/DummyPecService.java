@@ -21,6 +21,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static it.pagopa.pn.template.service.DummyPecServiceUtil.DUMMY_PATTERN_STRING;
+
 @Getter
 @RequiredArgsConstructor
 @Service
@@ -53,8 +55,8 @@ public class DummyPecService implements PnPecService {
                         subject, from, replyTo, receiverAddress, originalMessageId);
 
                // build unique id for acceptance and delivery
-               String acceptanceMessageId = UUID.randomUUID().toString();
-               String deliveryMessageId = UUID.randomUUID().toString();
+               String acceptanceMessageId = UUID.randomUUID() + DUMMY_PATTERN_STRING;
+               String deliveryMessageId = UUID.randomUUID() + DUMMY_PATTERN_STRING;
 
                PecInfo acceptanceInfo = PecInfo.builder()
                                                .messageId(messageID)
