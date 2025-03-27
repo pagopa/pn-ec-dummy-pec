@@ -1,5 +1,6 @@
 package it.pagopa.pn.template.service;
 
+import it.pagopa.pn.library.exceptions.PnSpapiPermanentErrorException;
 import it.pagopa.pn.template.dto.PecInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -68,5 +69,17 @@ class DummyPecServiceSendMailTest {
         StepVerifier.create(dummyPecService.sendMail(invalidMessage))
                     .expectError(Exception.class)
                     .verify();
+    }
+
+
+    @Test
+    void testBlackmailAddress() throws Exception {
+
+        byte[] message = DummyPecServiceTestUtil.createMimeMessageAsBytes("Test Subject", "test@sender.com", "test@test.it");
+
+        StepVerifier.create(dummyPecService.sendMail(message))
+                    .expectError(PnSpapiPermanentErrorException.class)
+                    .verify();
+
     }
 }

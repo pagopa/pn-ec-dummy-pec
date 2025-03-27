@@ -1,23 +1,24 @@
 package it.pagopa.pn.template.service;
 
+import it.pagopa.pn.library.exceptions.PnSpapiPermanentErrorException;
 import it.pagopa.pn.library.pec.pojo.PnGetMessagesResponse;
 import it.pagopa.pn.library.pec.pojo.PnListOfMessages;
 import it.pagopa.pn.library.pec.service.PnPecService;
 import it.pagopa.pn.template.dto.PecInfo;
 import it.pagopa.pn.template.type.PecType;
+import jakarta.mail.Message;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
 import lombok.CustomLog;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.io.ByteArrayInputStream;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -28,8 +29,12 @@ import static it.pagopa.pn.template.service.DummyPecServiceUtil.DUMMY_PATTERN_ST
 @Service
 @CustomLog
 public class DummyPecService implements PnPecService {
+
     private final ConcurrentHashMap<String, PecInfo> pecMap = new ConcurrentHashMap<>();
     private final DummyPecServiceUtil dummyPecServiceUtil;
+
+    @Value("#{'${blacklist.domain}'.split(',')}")
+    private List<String> blacklistDomain;
 
     @Override
     public Mono<String> sendMail(byte[] message) {
@@ -44,8 +49,10 @@ public class DummyPecService implements PnPecService {
                String messageID = mimeMessage.getMessageID();
                String subject = mimeMessage.getSubject();
                String from = mimeMessage.getFrom()[0].toString();
-               String replyTo = (mimeMessage.getReplyTo() != null &&
-                                 mimeMessage.getReplyTo().length > 0) ? mimeMessage.getReplyTo()[0].toString() : null;
+               String replyTo = (mimeMessage.getReplyTo() != null && mimeMessage.getReplyTo().length > 0) ? mimeMessage.getRecipients(Message.RecipientType.TO)[0].toString() : null;
+
+               if(verifyBlacklist(Objects.requireNonNull(replyTo))){throw new PnSpapiPermanentErrorException("Blacklisted address: " + replyTo);}
+
                String receiverAddress = mimeMessage.getAllRecipients()[0].toString();
                String originalMessageId = mimeMessage.getMessageID();
 
@@ -179,5 +186,9 @@ public class DummyPecService implements PnPecService {
         .doOnSuccess(result -> log.logEndingProcess("Delete message success, message id: " + messageID))
         .doOnError(throwable -> log.logEndingProcess("Delete message  error, message id: " + messageID, false, throwable.getMessage()))
         .delayElement(java.time.Duration.ofMillis(dummyPecServiceUtil.calculateRandomDelay())).then();
+    }
+
+    private boolean verifyBlacklist(@NotNull String replyTo){
+        return blacklistDomain.contains(replyTo.substring(replyTo.lastIndexOf("@")+1));
     }
 }
