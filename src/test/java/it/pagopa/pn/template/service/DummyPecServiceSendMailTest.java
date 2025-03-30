@@ -71,11 +71,21 @@ class DummyPecServiceSendMailTest {
                     .verify();
     }
 
-
     @Test
-    void testBlackmailAddresses() throws Exception {
+    void testBlackmailAddress() throws Exception {
 
         byte[] message = DummyPecServiceTestUtil.createMimeMessageAsBytes("Test Subject", "test@sender.com", "test1@test.it");
+
+        StepVerifier.create(dummyPecService.sendMail(message))
+                    .expectError(PnSpapiPermanentErrorException.class)
+                    .verify();
+
+    }
+
+    @Test
+    void testMalformedAddresses() throws Exception {
+
+        byte[] message = DummyPecServiceTestUtil.createMimeMessageAsBytes("Test Subject", "test@sender.com", "testtest.it");
 
         StepVerifier.create(dummyPecService.sendMail(message))
                     .expectError(PnSpapiPermanentErrorException.class)

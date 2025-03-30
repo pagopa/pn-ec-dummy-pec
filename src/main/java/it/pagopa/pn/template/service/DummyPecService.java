@@ -21,6 +21,7 @@ import java.io.ByteArrayInputStream;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
 
 import static it.pagopa.pn.template.service.DummyPecServiceUtil.DUMMY_PATTERN_STRING;
 
@@ -33,8 +34,11 @@ public class DummyPecService implements PnPecService {
     private final ConcurrentHashMap<String, PecInfo> pecMap = new ConcurrentHashMap<>();
     private final DummyPecServiceUtil dummyPecServiceUtil;
 
-    @Value("#{'${blacklist.addresses}'.split(',')}")
-    private List<String> blacklistAddresses;
+    @Value("#{'${blacklisted.addresses}'.split(',')}")
+    private List<String> blacklistedAddresses;
+
+    @Value("${regex.pattern}")
+    private String regexPattern;
 
     @Override
     public Mono<String> sendMail(byte[] message) {
@@ -51,7 +55,7 @@ public class DummyPecService implements PnPecService {
                String from = mimeMessage.getFrom()[0].toString();
                String replyTo = (mimeMessage.getReplyTo() != null && mimeMessage.getReplyTo().length > 0) ? mimeMessage.getRecipients(Message.RecipientType.TO)[0].toString() : null;
 
-               if(verifyBlacklist(Objects.requireNonNull(replyTo))){throw new PnSpapiPermanentErrorException("Blacklisted address: " + replyTo);}
+               if(!validAddress(Objects.requireNonNull(replyTo))){throw new PnSpapiPermanentErrorException("Invalid address: " + replyTo);}
 
                String receiverAddress = mimeMessage.getAllRecipients()[0].toString();
                String originalMessageId = mimeMessage.getMessageID();
@@ -188,7 +192,12 @@ public class DummyPecService implements PnPecService {
         .delayElement(java.time.Duration.ofMillis(dummyPecServiceUtil.calculateRandomDelay())).then();
     }
 
-    private boolean verifyBlacklist(@NotNull String replyTo){
-        return blacklistAddresses.contains(replyTo);
+    private boolean validAddress(@NotNull String replyTo){
+
+        if( Pattern.compile(regexPattern).matcher(replyTo).matches() ) {
+            return !blacklistedAddresses.contains(replyTo);
+        }
+        else { return false; }
+
     }
 }
