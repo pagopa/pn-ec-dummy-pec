@@ -73,9 +73,9 @@ class DummyPecServiceSendMailTest {
 
 
     @Test
-    void testBlackmailAddress() throws Exception {
+    void testBlackmailAddresses() throws Exception {
 
-        byte[] message = DummyPecServiceTestUtil.createMimeMessageAsBytes("Test Subject", "test@sender.com", "test@test.it");
+        byte[] message = DummyPecServiceTestUtil.createMimeMessageAsBytes("Test Subject", "test@sender.com", "test1@test.it");
 
         StepVerifier.create(dummyPecService.sendMail(message))
                     .expectError(PnSpapiPermanentErrorException.class)

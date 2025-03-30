@@ -33,8 +33,8 @@ public class DummyPecService implements PnPecService {
     private final ConcurrentHashMap<String, PecInfo> pecMap = new ConcurrentHashMap<>();
     private final DummyPecServiceUtil dummyPecServiceUtil;
 
-    @Value("#{'${blacklist.domain}'.split(',')}")
-    private List<String> blacklistDomain;
+    @Value("#{'${blacklist.addresses}'.split(',')}")
+    private List<String> blacklistAddresses;
 
     @Override
     public Mono<String> sendMail(byte[] message) {
@@ -189,6 +189,6 @@ public class DummyPecService implements PnPecService {
     }
 
     private boolean verifyBlacklist(@NotNull String replyTo){
-        return blacklistDomain.contains(replyTo.substring(replyTo.lastIndexOf("@")+1));
+        return blacklistAddresses.contains(replyTo);
     }
 }
