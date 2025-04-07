@@ -1,17 +1,29 @@
-package it.pagopa.pn.template.service;
+package it.pagopa.pn.ec.dummy.pec.service;
 
-import it.pagopa.pn.template.dto.PecInfo;
+import it.pagopa.pn.ec.dummy.pec.conf.DummyPecServiceTestConfiguration;
+import it.pagopa.pn.ec.dummy.pec.dto.PecInfo;
+import it.pagopa.pn.library.exceptions.PnSpapiPermanentErrorException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import reactor.test.StepVerifier;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@SpringBootTest(classes = DummyPecTestApplication.class)
+@Import(DummyPecServiceTestConfiguration.class)
+@SpringBootTest
 class DummyPecServiceMarkMessageAsReadTest {
     @Autowired
     private DummyPecService dummyPecService;
+
+    @BeforeEach
+    void setUp() {
+        dummyPecService.getPecMap().clear();
+    }
 
     @Test
     void testMarkMessageAsRead_ShouldMarkMessageAsRead() {
@@ -27,21 +39,18 @@ class DummyPecServiceMarkMessageAsReadTest {
         assertTrue(dummyPecService.getPecMap().get(messageID).isRead());
     }
 
-    @Test
-    void testMarkMessageAsRead_ShouldThrowExceptionForNullMessageID() {
-        StepVerifier.create(dummyPecService.markMessageAsRead(null))
-                    .expectError(IllegalArgumentException.class)
-                    .verify();
-
-        StepVerifier.create(dummyPecService.markMessageAsRead(""))
-                    .expectError(IllegalArgumentException.class)
+    @ParameterizedTest
+    @NullAndEmptySource
+    void testMarkMessageAsRead_ShouldThrowExceptionForNullMessageID(String messageID) {
+        StepVerifier.create(dummyPecService.markMessageAsRead(messageID))
+                    .expectErrorMatches(e -> (e instanceof PnSpapiPermanentErrorException && e.getCause() instanceof IllegalArgumentException))
                     .verify();
     }
 
     @Test
     void testMarkMessageAsRead_ShouldThrowExceptionForNonExistentMessage() {
         StepVerifier.create(dummyPecService.markMessageAsRead("non-existent-id"))
-                    .expectError(IllegalArgumentException.class)
+                    .expectErrorMatches(e -> (e instanceof PnSpapiPermanentErrorException && e.getCause() instanceof IllegalArgumentException))
                     .verify();
     }
 }

@@ -1,7 +1,7 @@
-package it.pagopa.pn.template.util;
+package it.pagopa.pn.ec.dummy.pec.util;
 
-import it.pagopa.pn.template.dto.PecInfo;
-import it.pagopa.pn.template.type.PecType;
+import it.pagopa.pn.ec.dummy.pec.dto.PecInfo;
+import it.pagopa.pn.ec.dummy.pec.type.PecType;
 import lombok.extern.slf4j.Slf4j;
 
 import java.text.SimpleDateFormat;
@@ -25,7 +25,7 @@ public class PecUtils {
         return Base64.getEncoder().encodeToString(bytes);
     }
 
-    public static StringBuilder generateDaticert(PecInfo pecInfo, String gestoreMittente, String data, String orario){
+    public static StringBuilder generateDaticert(PecInfo pecInfo, String gestoreMittente, String data, String orario, String tipoDestinatario){
 
         boolean isAccettazione = pecInfo.getPecType().equals(PecType.ACCETTAZIONE);
         String postacertType = isAccettazione ? "accettazione" : "avvenuta-consegna";
@@ -36,7 +36,7 @@ public class PecUtils {
         stringBuilder.append("<postacert tipo=\"").append(postacertType).append("\" errore=\"nessuno\">");
         stringBuilder.append("<intestazione>");
         stringBuilder.append("<mittente>").append(pecInfo.getFrom()).append("</mittente>"); //mittente dell'email, sta nella mappa
-        stringBuilder.append("<destinatari tipo=\"certificato\">").append(pecInfo.getReceiverAddress()).append("</destinatari>"); //destinatario dell'email, sta nella mappa
+        stringBuilder.append("<destinatari tipo=\"").append(tipoDestinatario).append("\">").append(pecInfo.getReceiverAddress()).append("</destinatari>");
         stringBuilder.append("<risposte>").append(pecInfo.getReplyTo()).append("</risposte>"); //nel messaggio che uso per popolare la mappa c'è un reply-to
         stringBuilder.append("<oggetto>").append(pecInfo.getSubject()).append("</oggetto>"); //oggetto dell'email, sta nella mappa
         stringBuilder.append("</intestazione>");

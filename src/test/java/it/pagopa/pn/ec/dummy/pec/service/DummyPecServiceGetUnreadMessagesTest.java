@@ -1,18 +1,19 @@
-package it.pagopa.pn.template.service;
+package it.pagopa.pn.ec.dummy.pec.service;
 
-import it.pagopa.pn.template.dto.PecInfo;
-import it.pagopa.pn.template.type.PecType;
+import it.pagopa.pn.ec.dummy.pec.conf.DummyPecServiceTestConfiguration;
+import it.pagopa.pn.ec.dummy.pec.dto.PecInfo;
+import it.pagopa.pn.ec.dummy.pec.type.PecType;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import reactor.test.StepVerifier;
 
 import java.io.ByteArrayInputStream;
@@ -23,22 +24,20 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 
+import static it.pagopa.pn.ec.dummy.pec.service.DummyPecServiceUtil.convertPecInfoToBytes;
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(classes = DummyPecTestApplication.class)
+@Import(DummyPecServiceTestConfiguration.class)
+@SpringBootTest
 class DummyPecServiceGetUnreadMessagesTest {
     public static final int TOTAL_MSG = 10;
     public static final int EXPECTED_UNREAD_MSG = 4;
     public static final int LIMIT_UNREAD = 4;
-
     @Autowired
     private DummyPecService dummyPecService;
-
-    @Autowired
-    private DummyPecServiceUtil dummyPecServiceUtil;
-
     @BeforeEach
     void setUp() {
+        dummyPecService.getPecMap().clear();
         // Popola la mappa con 5 messaggi di esempio
         for (int i = 0; i < TOTAL_MSG; i++) {
             String messageId = UUID.randomUUID().toString();
@@ -107,7 +106,7 @@ class DummyPecServiceGetUnreadMessagesTest {
                 .build();
 
         // Act
-        byte[] mimeBytes = dummyPecServiceUtil.convertPecInfoToBytes(Map.entry("test-message-id", pecInfo));
+        byte[] mimeBytes = convertPecInfoToBytes(Map.entry("test-message-id", pecInfo));
 
         // Assert
         MimeMessage mimeMessage = new MimeMessage(Session.getInstance(new Properties()), new ByteArrayInputStream(mimeBytes));

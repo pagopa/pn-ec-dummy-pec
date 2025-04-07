@@ -1,16 +1,16 @@
-package it.pagopa.pn.template.service;
+package it.pagopa.pn.ec.dummy.pec.util;
 
 import jakarta.mail.Session;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
-import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.util.Properties;
 
-@Service
+import static org.apache.commons.codec.CharEncoding.UTF_8;
+
 public class DummyPecServiceTestUtil {
 
     public static byte[] createMimeMessageAsBytes(String subject, String from, String to) throws Exception {
@@ -20,7 +20,7 @@ public class DummyPecServiceTestUtil {
         MimeMessage mimeMessage = new MimeMessage(session);
         mimeMessage.setSubject(subject);
         mimeMessage.setFrom(new InternetAddress(from));
-        mimeMessage.addRecipient(MimeMessage.RecipientType.TO, new InternetAddress(to));
+        mimeMessage.addRecipient(MimeMessage.RecipientType.TO, new InternetAddress(to, "", UTF_8));
 
         // add simple body content
         MimeBodyPart bodyPart = new MimeBodyPart();

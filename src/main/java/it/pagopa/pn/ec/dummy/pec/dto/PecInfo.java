@@ -1,6 +1,6 @@
-package it.pagopa.pn.template.dto;
+package it.pagopa.pn.ec.dummy.pec.dto;
 
-import it.pagopa.pn.template.type.PecType;
+import it.pagopa.pn.ec.dummy.pec.type.PecType;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 

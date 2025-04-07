@@ -1,22 +1,24 @@
-package it.pagopa.pn.template.service;
+package it.pagopa.pn.ec.dummy.pec.service;
 
-import it.pagopa.pn.template.dto.PecInfo;
+import it.pagopa.pn.ec.dummy.pec.conf.DummyPecServiceTestConfiguration;
+import it.pagopa.pn.ec.dummy.pec.dto.PecInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import reactor.test.StepVerifier;
 
 import java.util.UUID;
 
-@SpringBootTest(classes = DummyPecTestApplication.class)
+@Import(DummyPecServiceTestConfiguration.class)
+@SpringBootTest
 class DummyPecServiceGetMessageCountTest {
     @Autowired
     private DummyPecService dummyPecService;
 
     @BeforeEach
     void setUp() {
-        dummyPecService = new DummyPecService(new DummyPecServiceUtil());
         dummyPecService.getPecMap().clear();
     }
 

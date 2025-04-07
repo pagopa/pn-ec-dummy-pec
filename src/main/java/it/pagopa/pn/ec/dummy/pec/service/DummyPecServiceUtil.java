@@ -1,7 +1,8 @@
-package it.pagopa.pn.template.service;
+package it.pagopa.pn.ec.dummy.pec.service;
 
-import it.pagopa.pn.template.dto.PecInfo;
-import it.pagopa.pn.template.util.PecUtils;
+import it.pagopa.pn.ec.dummy.pec.dto.PecInfo;
+import it.pagopa.pn.ec.dummy.pec.type.PecType;
+import it.pagopa.pn.ec.dummy.pec.util.PecUtils;
 import jakarta.activation.DataHandler;
 import jakarta.activation.DataSource;
 import jakarta.mail.Session;
@@ -10,8 +11,6 @@ import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
 import jakarta.mail.util.ByteArrayDataSource;
 import lombok.CustomLog;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
@@ -20,20 +19,19 @@ import java.util.Properties;
 
 import static jakarta.mail.Message.RecipientType.TO;
 
-@Service
 @CustomLog
 public class DummyPecServiceUtil {
-    @Value("${dummy.pec.min-delay-ms:100}")
-    private long minDelayMs;
-    @Value("${dummy.pec.max-delay-ms:500}")
-    private long maxDelayMs;
+
+    private DummyPecServiceUtil() {
+        throw new IllegalStateException("DummyPecServiceUtil is a utility class");
+    }
     public static final String DUMMY_PATTERN_STRING = "@pec.dummy.it";
 
-    public long calculateRandomDelay() {
+    public static long calculateRandomDelay(long minDelayMs, long maxDelayMs) {
         return minDelayMs + (long) (Math.random() * (maxDelayMs - minDelayMs));
     }
 
-    byte[] convertPecInfoToBytes(Map.Entry<String, PecInfo> entry) {
+    public static byte[] convertPecInfoToBytes(Map.Entry<String, PecInfo> entry) {
         try {
             String messageID = entry.getKey();
             PecInfo pecInfo = entry.getValue();
@@ -55,7 +53,8 @@ public class DummyPecServiceUtil {
             textPart.setText("Questo è un messaggio di esempio.", "UTF-8");
 
             // Genera il contenuto del daticert.xml
-            StringBuilder datiCertXml = PecUtils.generateDaticert(pecInfo, "mock-pec", PecUtils.getCurrentDate(), PecUtils.getCurrentTime());
+            String tipoDestinatario = pecInfo.getPecType().equals(PecType.NON_PEC) ? "esterno" : "certificato";
+            StringBuilder datiCertXml = PecUtils.generateDaticert(pecInfo, "mock-pec", PecUtils.getCurrentDate(), PecUtils.getCurrentTime(), tipoDestinatario);
 
             // Crea la parte del messaggio per daticert.xml
             var datiCertPart = new MimeBodyPart();
@@ -83,6 +82,19 @@ public class DummyPecServiceUtil {
         } catch (Exception e) {
             throw new RuntimeException("Error converting PecInfo to byte[]", e);
         }
+    }
+
+    public static PecInfo buildPecInfo(String messageID, String receiverAddress, String subject, String from, String replyTo, PecType pecType) {
+        return PecInfo.builder()
+                .messageId(messageID)
+                .receiverAddress(receiverAddress)
+                .subject(subject)
+                .from(from)
+                .replyTo(replyTo)
+                .pecType(pecType)
+                .errorMap(Map.of()) // no default error
+                .read(false)
+                .build();
     }
 
 }

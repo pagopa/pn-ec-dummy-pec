@@ -1,4 +1,4 @@
-package it.pagopa.pn.template.service;
+package it.pagopa.pn.ec.dummy.pec;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
