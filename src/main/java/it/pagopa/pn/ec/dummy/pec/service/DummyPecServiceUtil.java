@@ -53,8 +53,7 @@ public class DummyPecServiceUtil {
             textPart.setText("Questo è un messaggio di esempio.", "UTF-8");
 
             // Genera il contenuto del daticert.xml
-            String tipoDestinatario = pecInfo.getPecType().equals(PecType.NON_PEC) ? "esterno" : "certificato";
-            StringBuilder datiCertXml = PecUtils.generateDaticert(pecInfo, "mock-pec", PecUtils.getCurrentDate(), PecUtils.getCurrentTime(), tipoDestinatario);
+            StringBuilder datiCertXml = PecUtils.generateDaticert(pecInfo, "mock-pec", PecUtils.getCurrentDate(), PecUtils.getCurrentTime());
 
             // Crea la parte del messaggio per daticert.xml
             var datiCertPart = new MimeBodyPart();

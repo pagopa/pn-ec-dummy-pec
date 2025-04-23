@@ -93,6 +93,18 @@ class DummyPecServiceGetUnreadMessagesTest {
         assertTrue(daticert.contains("<postacert tipo=\"avvenuta-consegna\""));
     }
 
+    @Test
+    void testConvertPecInfoToBytes_ShouldIncludeDaticertNonPecAttachment() throws Exception {
+        String daticert = testConvertPecInfoToBytes(PecType.NON_PEC);
+        assertTrue(daticert.contains("<postacert tipo=\"non-pec\""));
+    }
+
+    @Test
+    void testConvertPecInfoToBytes_ShouldIncludeDaticertPreavvisoMancataConsegnaAttachment() throws Exception {
+        String daticert = testConvertPecInfoToBytes(PecType.PREAVVISO_MANCATA_CONSEGNA);
+        assertTrue(daticert.contains("<postacert tipo=\"preavviso-mancata-consegna\""));
+    }
+
     // Converte un PecInfo in un daticert. Restituisce il daticert sottoforma di stringa
     String testConvertPecInfoToBytes(PecType pecType) throws IOException, MessagingException {
         // Arrange
