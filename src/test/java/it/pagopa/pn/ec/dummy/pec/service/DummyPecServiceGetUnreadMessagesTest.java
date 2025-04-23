@@ -100,9 +100,9 @@ class DummyPecServiceGetUnreadMessagesTest {
     }
 
     @Test
-    void testConvertPecInfoToBytes_ShouldIncludeDaticertPreavvisoMancataConsegnaAttachment() throws Exception {
-        String daticert = testConvertPecInfoToBytes(PecType.PREAVVISO_MANCATA_CONSEGNA);
-        assertTrue(daticert.contains("<postacert tipo=\"preavviso-mancata-consegna\""));
+    void testConvertPecInfoToBytes_ShouldIncludeDaticertPreavvisoErroreConsegnaAttachment() throws Exception {
+        String daticert = testConvertPecInfoToBytes(PecType.PREAVVISO_ERRORE_CONSEGNA);
+        assertTrue(daticert.contains("<postacert tipo=\"preavviso-errore-consegna\""));
     }
 
     // Converte un PecInfo in un daticert. Restituisce il daticert sottoforma di stringa
