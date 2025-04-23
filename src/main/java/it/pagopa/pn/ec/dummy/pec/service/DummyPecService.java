@@ -37,6 +37,9 @@ public class DummyPecService implements PnPecService {
     @Value("#{'${blacklisted.addresses}'.split(',')}")
     private List<String> blacklistedAddresses;
 
+    @Value("#{'${forewarning.addresses}'.split(',')}")
+    private List<String> forewarningAddresses;
+
     @Override
     public Mono<String> sendMail(byte[] message) {
         log.logStartingProcess("Send mail starting...");
@@ -66,7 +69,10 @@ public class DummyPecService implements PnPecService {
                pecMap.put(acceptanceMessageId, acceptanceInfo);
 
                // Se l'indirizzo non è PEC, viene generata la ricevuta di accettazione, ma non quella di consegna.
-               if (isPecAddress(Objects.requireNonNull(replyTo))) {
+               if (isForewarningAddress(Objects.requireNonNull(replyTo))) {
+                   PecInfo preavvisoInfo = buildPecInfo(messageID, receiverAddress, subject, from, replyTo, PecType.PREAVVISO_MANCATA_CONSEGNA);
+                   pecMap.put(UUID.randomUUID() + DUMMY_PATTERN_STRING, preavvisoInfo);
+               } else if (isPecAddress(Objects.requireNonNull(replyTo))) {
                    PecInfo deliveryInfo = buildPecInfo(messageID, receiverAddress, subject, from, replyTo, PecType.CONSEGNA);
                    pecMap.put(UUID.randomUUID() + DUMMY_PATTERN_STRING, deliveryInfo);
                } else {
@@ -177,5 +183,9 @@ public class DummyPecService implements PnPecService {
 
     private boolean isPecAddress(@NotNull String replyTo) {
         return !blacklistedAddresses.contains(replyTo);
+    }
+
+    private boolean isForewarningAddress(@NotNull String replyTo) {
+        return forewarningAddresses.contains(replyTo);
     }
 }
