@@ -47,8 +47,8 @@ public class PecUtils {
                 postacertType.append("<postacert tipo=\"").append("non-pec").append("\" errore=\"nessuno\">");
                 recipientType = "esterno";
             }
-            case PREAVVISO_MANCATA_CONSEGNA -> {
-                postacertType.append("<postacert tipo=\"").append("preavviso-mancata-consegna").append("\" errore=\"nessuno\">");
+            case PREAVVISO_ERRORE_CONSEGNA -> {
+                postacertType.append("<postacert tipo=\"").append("preavviso-errore-consegna").append("\" errore=\"nessuno\">");
                 recipientType = "certificato";
                 postacertInfo.append("<errore-esteso>").append("5.4.1").append("</errore-esteso>");
             }

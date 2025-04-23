@@ -119,8 +119,8 @@ class DummyPecServiceSendMailTest {
                         Map<String, PecInfo> pecMap = dummyPecService.getPecMap();
                         assertEquals(2, pecMap.size());
 
-                        // Verifica che ci sia un PecInfo con pecType PREAVVISO_MANCATA_CONSEGNA
-                        assertThat(pecMap.values(), Matchers.hasItem(Matchers.hasProperty("pecType", Matchers.is(PecType.PREAVVISO_MANCATA_CONSEGNA))));
+                        // Verifica che ci sia un PecInfo con pecType PREAVVISO_ERRORE_CONSEGNA
+                        assertThat(pecMap.values(), Matchers.hasItem(Matchers.hasProperty("pecType", Matchers.is(PecType.PREAVVISO_ERRORE_CONSEGNA))));
 
 
                     })

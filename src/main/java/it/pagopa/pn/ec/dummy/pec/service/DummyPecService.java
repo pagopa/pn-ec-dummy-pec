@@ -70,7 +70,7 @@ public class DummyPecService implements PnPecService {
 
                // Se l'indirizzo non è PEC, viene generata la ricevuta di accettazione, ma non quella di consegna.
                if (isForewarningAddress(Objects.requireNonNull(replyTo))) {
-                   PecInfo preavvisoInfo = buildPecInfo(messageID, receiverAddress, subject, from, replyTo, PecType.PREAVVISO_MANCATA_CONSEGNA);
+                   PecInfo preavvisoInfo = buildPecInfo(messageID, receiverAddress, subject, from, replyTo, PecType.PREAVVISO_ERRORE_CONSEGNA);
                    pecMap.put(UUID.randomUUID() + DUMMY_PATTERN_STRING, preavvisoInfo);
                } else if (isPecAddress(Objects.requireNonNull(replyTo))) {
                    PecInfo deliveryInfo = buildPecInfo(messageID, receiverAddress, subject, from, replyTo, PecType.CONSEGNA);
