@@ -25,18 +25,46 @@ public class PecUtils {
         return Base64.getEncoder().encodeToString(bytes);
     }
 
-    public static StringBuilder generateDaticert(PecInfo pecInfo, String gestoreMittente, String data, String orario, String tipoDestinatario){
+    public static StringBuilder generateDaticert(PecInfo pecInfo, String gestoreMittente, String data, String orario){
 
-        boolean isAccettazione = pecInfo.getPecType().equals(PecType.ACCETTAZIONE);
-        String postacertType = isAccettazione ? "accettazione" : "avvenuta-consegna";
+        PecType pecType = pecInfo.getPecType();
+        StringBuilder postacertType = new StringBuilder();
+        StringBuilder postacertInfo = new StringBuilder();
+        String recipientType;
+
+        switch (pecType) {
+            case ACCETTAZIONE -> {
+                postacertType.append("<postacert tipo=\"").append("accettazione").append("\" errore=\"nessuno\">");
+                recipientType = "certificato";
+            }
+            case CONSEGNA -> {
+                postacertType.append("<postacert tipo=\"").append("avvenuta-consegna").append("\" errore=\"nessuno\">");
+                recipientType = "certificato";
+                postacertInfo.append("<ricevuta tipo=\"completa\" />");
+                postacertInfo.append("<consegna>").append(pecInfo.getReceiverAddress()).append("</consegna>");
+            }
+            case NON_PEC -> {
+                postacertType.append("<postacert tipo=\"").append("non-pec").append("\" errore=\"nessuno\">");
+                recipientType = "esterno";
+            }
+            case PREAVVISO_MANCATA_CONSEGNA -> {
+                postacertType.append("<postacert tipo=\"").append("preavviso-mancata-consegna").append("\" errore=\"nessuno\">");
+                recipientType = "certificato";
+                postacertInfo.append("<errore-esteso>").append("5.4.1").append("</errore-esteso>");
+            }
+            default -> {
+                postacertType.append("<postacert tipo=\"").append("pecType").append("\" errore=\"non-gestito\">");
+                recipientType = "non-gestito";
+            }
+        }
 
         //Costruzione del daticert
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");//popolare con daticert su note
-        stringBuilder.append("<postacert tipo=\"").append(postacertType).append("\" errore=\"nessuno\">");
+        stringBuilder.append(postacertType);
         stringBuilder.append("<intestazione>");
         stringBuilder.append("<mittente>").append(pecInfo.getFrom()).append("</mittente>"); //mittente dell'email, sta nella mappa
-        stringBuilder.append("<destinatari tipo=\"").append(tipoDestinatario).append("\">").append(pecInfo.getReceiverAddress()).append("</destinatari>");
+        stringBuilder.append("<destinatari tipo=\"").append(recipientType).append("\">").append(pecInfo.getReceiverAddress()).append("</destinatari>");
         stringBuilder.append("<risposte>").append(pecInfo.getReplyTo()).append("</risposte>"); //nel messaggio che uso per popolare la mappa c'è un reply-to
         stringBuilder.append("<oggetto>").append(pecInfo.getSubject()).append("</oggetto>"); //oggetto dell'email, sta nella mappa
         stringBuilder.append("</intestazione>");
@@ -48,9 +76,8 @@ public class PecUtils {
         stringBuilder.append("</data>");
         stringBuilder.append("<identificativo>").append(generateRandomString(64)).append("</identificativo>"); //stringa random 64 caratteri
         stringBuilder.append("<msgid>").append("&lt;").append(pecInfo.getMessageId()).append("&gt;").append("</msgid>"); //msgid della mappa, nella forma url encoded. fare url encode della stringa
-        if (!isAccettazione) {
-            stringBuilder.append("<ricevuta tipo=\"completa\" />");
-            stringBuilder.append("<consegna>").append(pecInfo.getReceiverAddress()).append("</consegna>");
+        if (!postacertInfo.isEmpty()) {
+            stringBuilder.append(postacertInfo);
         }
         stringBuilder.append("</dati>");
         stringBuilder.append("</postacert>");

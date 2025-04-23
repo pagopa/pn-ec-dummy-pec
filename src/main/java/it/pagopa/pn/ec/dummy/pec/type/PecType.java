@@ -4,5 +4,6 @@ public enum PecType {
     CONSEGNA,
     ACCETTAZIONE,
 
-    NON_PEC;
+    PREAVVISO_MANCATA_CONSEGNA,
+    NON_PEC
 }

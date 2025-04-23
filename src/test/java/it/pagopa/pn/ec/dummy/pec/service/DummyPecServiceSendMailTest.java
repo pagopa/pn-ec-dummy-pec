@@ -104,6 +104,29 @@ class DummyPecServiceSendMailTest {
                 .verifyComplete();
     }
 
+
+    @Test
+    void testForewarningAddress() throws Exception {
+
+        byte[] message = DummyPecServiceTestUtil.createMimeMessageAsBytes("Test Subject", "test@sender.com", "test3@test.it");
+
+        StepVerifier.create(dummyPecService.sendMail(message))
+                    .assertNext(originalMessageId -> {
+                        // Verifica che l'ID originale sia restituito
+                        assertNotNull(originalMessageId);
+
+                        // Verifica che nella mappa siano presenti solo 2 messaggi
+                        Map<String, PecInfo> pecMap = dummyPecService.getPecMap();
+                        assertEquals(2, pecMap.size());
+
+                        // Verifica che ci sia un PecInfo con pecType PREAVVISO_MANCATA_CONSEGNA
+                        assertThat(pecMap.values(), Matchers.hasItem(Matchers.hasProperty("pecType", Matchers.is(PecType.PREAVVISO_MANCATA_CONSEGNA))));
+
+
+                    })
+                    .verifyComplete();
+    }
+
     @Test
     void testMalformedAddresses() throws Exception {
 
